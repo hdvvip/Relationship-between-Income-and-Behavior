@@ -1,0 +1,311 @@
+---
+title: "Exploring the BRFSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(statsr)
+library(dplyr)
+```
+
+### Load data
+
+Make sure your data and R Markdown files are in the same directory. When loaded
+your data file will be called `brfss2013`. Delete this note when before you submit 
+your work. 
+
+```{r load-data}
+load("brfss2013.RData")
+```
+
+
+
+* * *
+
+## Part 1: Data
+
+
+#### Target population: U.S adults 18 years old or older
+
+The data is collected from randomly selected adult in a household who reside in US. There is only 0.5% of U.S population is homeless, hence the data represents the the target population.
+
+
+#### Generalizablity
+
+This is an obeservational study, and random sampling is apllied in data collection. Hence, the results can be generalizable to the target population.
+
+
+##### Causality
+
+This data is an observational study, so it is not an expriment. This data is not applied random assignment. Hence, There is NO causal conclusion can be draw from the analysis result.
+
+
+##### Bias avoid
+
+Non-response bias: Follow the data quality report for brfss2013, the response rate is lower than 50%. Hence, we may need to consider the Non-response bias for this data. 
+
+Voluntary bias: In addition, there is total 15 calling attempts to complete the survey in each sample, so people who willing to take this survey may have strong opinion about health problems in U.S. Hence, voluntary bias may be taken in this data.
+
+Convenience bias: The data is collected by each state and we do not know how each individual is chosen for the survey. So, convenience bias is also need to be considered in this data.
+
+Conclusion: there are many bias problems in this data.
+
+References:
+https://www.cdc.gov/brfss/annual_data/2013/pdf/2013_dqr.pdf
+https://www.cdc.gov/brfss/data_documentation/pdf/UserguideJune2013.pdf 
+
+##### Sample size
+
+The data contains 491775 cases, 330 variables. Therefore, the sample size is reasonably large.
+
+
+* * *
+
+## Part 2: Research questions
+
+**Research quesion 1: Whether number of excerise hours is related with income?** 
+
+This is very interesting question because we may guess whether people who doing more excercise will tends to have high income or vice versa.
+
+Variables used:
+
+exerany2: Exercise In Past 30 Days
+
+exerhmm1: Minutes Or Hours Walking, Running, Jogging, Or Swimming
+
+exerhmm2: Minutes Or Hours Walking, Running, Jogging, Or Swimming
+
+income2: Income Level
+
+**Research quesion 2: Is BMI and income level related to each other?** 
+
+We always wonder that whether having more money gonna change people life leading to a healthy life style. If people having the healthy life style, the majority of their BMI will stay in those healthy groups.
+
+Variables used:
+
+income2: Income Level
+
+X_bmi5: Computed Body Mass Index
+
+X_bmi5cat: Computed Body Mass Index Categories
+
+Audience: if you are finding answer for the question: "Will money change people?"
+
+**Research quesion 3: Is income level and alcohol Consumption related?**
+
+We want to know which group of income level gonna consume alcohol the most.
+
+Variables used:
+
+income2: Income Level
+
+alcday5: Days In Past 30 Had Alcoholic Beverage
+
+Audience: it is my personal interest about whether people having more or less money will consump more alcohol.
+
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
+button (green button with orange arrow) above. Make sure that your code is visible
+in the project you submit. Delete this note when before you submit your work.
+
+
+
+**Research quesion 1: Whether number of excerise hours is related with income?**
+
+```{r}
+# Vairables:
+
+# exerany2: Exercise In Past 30 Days
+# 
+# exerhmm1: Minutes Or Hours Walking, Running, Jogging, Or Swimming
+# 
+# exerhmm2: Minutes Or Hours Walking, Running, Jogging, Or Swimming
+# 
+# income2: Income Level
+
+```
+
+```{r}
+# explore 4 variables: exerany2, exerhmm1, exerhmm2, income2
+
+brfss2013 %>%
+  select(exerany2, exerhmm1, exerhmm2, income2) %>%
+  str()
+
+```
+
+#### Income is related to Excercise?
+
+##### Prepare data for question 1
+```{r}
+# get total excersie minute = exerhmm1 + exerhmm2
+
+brfss2013 = brfss2013 %>%
+  mutate(totalExerhmm = exerhmm1 + exerhmm2)
+
+# drop NA value from two variables: income2, exerany2
+
+in_ex_df = brfss2013 %>%
+  filter(!is.na(income2), !is.na(exerany2))
+```
+
+
+```{r}
+# Use theme to write columns name vertically. This is stacked bar plot 
+
+p = ggplot(data=in_ex_df, aes(x=factor(income2), fill=exerany2)) + geom_bar(position="fill") +  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+
+p + labs(title = "Income Level vs Excercise", x = "Income Levels", fill = "Exercise", y = "Percent")
+
+
+```
+
+##### Conclusion: 
+
+From the graph, it is clearly that people who have higher income tend to say "yes" with doing excercise. More than 75% of people with income >= 75,000 doing excercise.
+
+***
+
+#### More income = more excersice?
+
+```{r}
+# drop NA values from 3 variables: income2, exerany2, totalExerhmm
+
+in_ex_df = brfss2013 %>%
+  filter(!is.na(income2), !is.na(exerany2), !is.na(totalExerhmm))
+
+# totalExerhmm stay in minutes. totalExerhmm/60 give hours
+# Use theme to write columns name vertically.
+
+p = ggplot(data=in_ex_df, aes(x=factor(income2), y=totalExerhmm/60))  + geom_boxplot() + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+
+p + labs(title = "Income Level vs Excercise hours", x = "Income Levels", y = "Exercise hours")
+```
+
+##### Conclusion: 
+
+Based on the graph, we can see that number of exercise hour of people with high income and people with low income does not have much variance from each other. Hence, the number of exercise hour has no related with income. However, from the previous graph, income has some related to the rate of people doing exercise in each income levels groups.
+
+***
+
+**Research quesion 2: Is BMI and income level related to each other?**
+
+```{r}
+# Variables:
+
+# income2: Income Level
+# X_bmi5: Computed Body Mass Index
+# X_bmi5cat: Computed Body Mass Index Categories
+```
+
+```{r}
+# explore 3 variables: income2, weight2, height3
+
+brfss2013 %>%
+  select(income2, X_bmi5, X_bmi5cat) %>%
+  str()
+
+```
+
+##### Prepare data for question 2
+
+```{r}
+in_bmi_df = brfss2013 %>%
+  filter(!is.na(income2), !is.na(X_bmi5), !is.na(X_bmi5cat))
+```
+
+
+#### BMI numeric value related to Income Level?
+
+```{r}
+# Box plot, x = income level, y = BMI numeric value 
+# theme would help bring the text vertically
+
+#The variable X_bmi5 should be divided by 100 to produce a reasonable BMI.
+
+p = ggplot(data=in_bmi_df, aes(x=factor(income2), y=X_bmi5/100)) + geom_boxplot() + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+
+p + labs(x="Income Level", y="BMI numeric value", title="BMI numeric value vs Income Level")
+```
+
+##### Conclusion:
+
+The BMI Index is distributed almost equally between income levels. So there is weak related between BMI Index and Income Level.
+
+***
+
+#### BMI category related to Income Level?
+
+```{r}
+# Stacked Box plot, x = income level, y = BMI Category 
+# theme would help bring the text vertically
+
+p = ggplot(data=in_bmi_df, aes(x=factor(income2), fill=X_bmi5cat)) + geom_bar(position = "fill") + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+
+p + labs(x="Income Level", fill="BMI Category", y="percent", title="BMI Category vs Income Level")
+```
+
+##### Conclusion:
+
+The graph is very reasonable in many aspects: For ex, the rate of underweight going down when people have more money. People with income >= $75,000 as analyzed in question 1, would do exercise more than people from other group. Hence, people with income >= 75,000 will have the highest rate of normal weight and lowest rate of obese.
+
+The border of BMI catgories of diffrent income levels is not a straight line. Hence, we can conclude that BMI category is related to income level.
+
+****
+
+**Research quesion 3: Is income level and alcohol Consumption related?**
+
+```{r}
+# Variables:
+
+# income2: Income Level
+# alcday5: Days In Past 30 Had Alcoholic Beverage
+```
+
+```{r}
+# explore 2 variables: income2, alcday5
+
+brfss2013 %>%
+  select(income2, alcday5) %>%
+  str()
+
+```
+
+##### Prepare Data for question 3
+
+```{r}
+# Drop NA values in variables: income2, alcday5
+
+in_al_df = brfss2013 %>% 
+  filter(!is.na(income2), !is.na(alcday5))
+```
+
+#### High income = high alcohol consumption?
+
+```{r}
+in_al_df %>%
+  group_by(income2) %>%
+  summarise(median_al = median(alcday5), 
+            mean_al = mean(alcday5),
+            max_al = max(alcday5),
+            min_al = min(alcday5))
+```
+
+##### Conclusion:
+
+There is trending behavior of alcohol consumption with income. People having more money tends to consume more alcohol as we see the mean of alcohol consumption increase follow increasing of income. Hence, there is related between income level and alcohol consumption.
+
+
