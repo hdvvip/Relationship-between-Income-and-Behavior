@@ -1,7 +1,8 @@
 # Relationship-between-Income-and-Behavior
 
 ### Data: The Behavioral Risk Factor Surveillance System (BRFSS)
-Links main page: https://www.cdc.gov/brfss/index.html
+
+Link main page: https://www.cdc.gov/brfss/index.html
 Link to data: https://www.cdc.gov/brfss/annual_data/annual_2013.html
 
 
